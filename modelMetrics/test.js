@@ -191,8 +191,8 @@ async function handleFormSubmit(event) {
   
     const numericTensor = rawTensor;
   
-    const min = await numericTensor.min().data();
-    const max = await numericTensor.max().data();
+    const min = await numericTensor.min();
+    const max = await numericTensor.max();
   
     const normalizedTensor = numericTensor.sub(min).div(max.sub(min));
     return {
