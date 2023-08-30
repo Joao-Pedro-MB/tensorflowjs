@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test</title>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+        <script src="test.js" charset="utf-8"></script>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+          }
+          section {
+            width: 80%;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+          }
+          form {
+            display: flex;
+            flex-direction: column;
+          }
+          label {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+          }
+          input[type="checkbox"] {
+            margin-right: 10px;
+          }
+          button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+          }
+          button:hover {
+            background-color: #0056b3;
+          }
+        </style>
+    </head>
+    <body>
+      <h1>Sensor Data</h1>
+    
+      <form id="sensorForm">
+        <label>
+          <input type="checkbox" name="selectedSensors" value="battery"> Battery
+        </label>
+        <label>
+          <input type="checkbox" name="selectedSensors" value="hardware"> Hardware
+        </label>
+        <label>
+          <input type="checkbox" name="selectedSensors" value="location"> Location
+        </label>
+        <!-- Add other checkboxes here -->
+        <button type="submit">Start</button>
+      </form>
+      
+      <section>
+        <div id="reports"></div>
+      </section>
+    </body>
+</html>
+      

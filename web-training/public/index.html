@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>Sensors Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
+  <script src="app.js" charset="utf-8"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2;
+    }
+    section {
+      width: 80%;
+      margin: 50px auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <section>
+    <h1>Sensors Dashboard</h1>
+    <form id="sensorForm">
+      <label>
+        <input type="checkbox" name="batteryStatus" value="battery"> Save Battery Status
+      </label>
+      <label>
+        <input type="checkbox" name="location" value="location"> Save Location
+      </label>
+      <label>
+        <input type="checkbox" name="gyroscope" value="gyroscope"> Save Gyroscope Data
+      </label>
+      <label>
+        <input type="checkbox" name="auxiliarySensors" value="auxiliarySensors"> Save Auxiliary Sensors
+      </label>
+      <label>
+        <input type="checkbox" name="hardwareMetrics" value="hardware"> Save Hardware Metrics
+      </label>
+      <button type="submit">Start Training</button>
+    </form>
+  </section>
+  <section>
+    <div id="reports"></div> <!-- This is where the reports will appear -->
+
+  </section>
+</body>
+</html>
