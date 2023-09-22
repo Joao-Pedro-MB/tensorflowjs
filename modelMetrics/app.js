@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   //norlisation funtion
-  async function normalise(rawTensor) {
+  async function normalise(rawTensor, previousMin = null, previousMax = null) {
     // Ensure the input tensor contains numeric data
     if (rawTensor.dtype !== 'float32') {
       throw new Error("Input tensor must have 'float32' data type");
@@ -38,14 +38,15 @@ document.addEventListener("DOMContentLoaded", () => {
   
     const numericTensor = rawTensor;
   
-    const min = await numericTensor.min().data();
-    const max = await numericTensor.max().data();
+    const min = previousMin || numericTensor.min();
+    const max = previousMax || numericTensor.max();
   
     const normalizedTensor = numericTensor.sub(min).div(max.sub(min));
+    
     return {
       tensor: normalizedTensor,
-      min: min[0], // Convert tensor data to numeric value
-      max: max[0], // Convert tensor data to numeric value
+      min,
+      max
     };
   }
 
@@ -86,9 +87,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
   }
-        
+
+  let normalisedFeature, normalisedLabel, trainingFeatureTensor, testingFeatureTensor, trainingLabelTensor, testingLabelTensor;
   // main funtion
-  async function startModel(selectedSensors) {
+  async function run(selectedSensors) {
     // Load data (needs to be from a URL to work in a browser)
     const strokeDataset = await tf.data.csv("http://localhost:8080/web-server/healthcare-dataset-stroke-data.csv");
   
@@ -107,19 +109,21 @@ document.addEventListener("DOMContentLoaded", () => {
     plot(points, "Average Glucose Level");
   
     // Features (inputs)
-    const featureValues = points.map(p => p.x);
-    const featureTensor = tf.tensor2d(featureValues, [featureValues.length, 1], 'float32'); // Specify data type
+    featureValues = points.map(p => p.x);
+    featureTensor = tf.tensor2d(featureValues, [featureValues.length, 1], 'float32'); // Specify data type
   
     // Labels (outputs)
-    const labelValues = points.map(p => p.y);
-    const labelTensor = tf.tensor2d(labelValues, [labelValues.length, 1], 'float32'); // Specify data type
+    labelValues = points.map(p => p.y);
+    labelTensor = tf.tensor2d(labelValues, [labelValues.length, 1], 'float32'); // Specify data type
   
     // Normalized features and labels
-    const normalisedFeature = await normalise(featureTensor);
-    const normalisedLabel = await normalise(labelTensor);
+    normalisedFeature = await normalise(featureTensor);
+    normalisedLabel = await normalise(labelTensor);
+    featureTensor.dispose();
+    labelTensor.dispose();
 
-    const [trainingFeatureTensor, testingFeatureTensor] = tf.split(normalisedFeature.tensor, 2);
-    const [trainingLabelTensor, testingLabelTensor] = tf.split(normalisedLabel.tensor, 2);
+    [trainingFeatureTensor, testingFeatureTensor] = tf.split(normalisedFeature.tensor, 2);
+    [trainingLabelTensor, testingLabelTensor] = tf.split(normalisedLabel.tensor, 2);
 
 
     // create the model and show its infos
@@ -139,7 +143,80 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`Testing set loss: ${loss}`);
   
   }
-  
+
+
+  async function predict() {
+    const predictionInput = parseInt(32); // TODO: get from html input
+    if (isNaN(predictionInput)) {
+      console.log("Invalid input");
+      return;
+
+    } else {
+      tf.tidy(() => {
+        const inputTensor = tf.tensor1d([predictionInput]);
+        const normalizedInput = normalise(inputTensor, normalisedFeature.min, normalisedFeature.max);
+        const normalizedOutputTensor = model.predict(normalizedInput.tensor);
+
+        // TODO: denormalize function
+        const outputTensor = denormalise(normalizedOutputTensor, normalisedLabel.min, normalisedLabel.max);
+
+        const outputValue = outputTensor.dataSync()[0];
+        console.log(`Prediction: ${outputValue}`);
+      })
+    }
+  }
+
+  // TODO: logic to switch between local and server
+  async function load() {
+    // recover from local
+    model = await tf.loadLayersModel('downloads://my-model');
+
+    // recover from server with a GET request
+    //model = await tf.loadLayersModel('http://model-server.domain/download')
+
+
+    // add model summary and impplement this model in training
+  }
+
+  async function save() {
+    // save locally
+    const savedResults = await model.save('downloads://my-model');
+    console.log(savedResults);
+
+    // save on server with a POST request with format multipart/form-data
+    //await model.save('http://model-server.domain/upload')
+  }
+
+  async function test () {
+    const lossTensor = model.evaluate(testingFeatureTensor, testingLabelTensor);
+    const loss = await lossTensor.dataSync();
+    console.log(`Testing set loss: ${loss}`);
+  }
+
+  async function train() {
+    ["train", "test", "predict", "load", "save"].forEach(id => {
+      // disable buttons for test
+    });
+    const model = createModel();
+    tfvis.show.modelSummary({ name: "Model summary"}, model);
+    const layer = model.getLayer(undefined, 0);
+    tfvis.show.layer({ name: "Layer"}, layer);
+
+    const result = await trainModel(model, trainingFeatureTensor, trainingLabelTensor);
+    console.log(result);
+    const trainingLoss = result.history.loss.pop();
+    console.log(`Training set loss: ${trainingLoss}`);
+    const validationLoss = result.history.val_loss.pop();
+    console.log(`Validation set loss: ${validationLoss}`);
+
+    const lossTensor = model.evaluate(testingFeatureTensor, testingLabelTensor);
+    const loss = await lossTensor.dataSync();
+    console.log(`Testing set loss: ${loss}`);
+  }
+
+  async function toggleVisor () {
+    tfvis.visor().toggle();
+  }
   // anotar dispositivo e dados de hardware junto com browser utilizado.
   // trocar provedor para o ngrok a fimd e publicar portas de acesso
   
