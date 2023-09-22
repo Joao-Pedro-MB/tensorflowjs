@@ -220,3 +220,4 @@ document.addEventListener("DOMContentLoaded", () => {
   // anotar dispositivo e dados de hardware junto com browser utilizado.
   // trocar provedor para o ngrok a fimd e publicar portas de acesso
   
+  // adicionar tipo de conectividade, latencia, tipo de rede movel, rtl, fluxo de dados, etc
